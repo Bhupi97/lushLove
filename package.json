@@ -1,0 +1,23 @@
+{
+  "name": "lushlove",
+  "version": "1.0.0",
+  "description": "LushLove is a dating app for people seeking deep connections based on shared values and life philosophies. Whether you’re into mindfulness, personal growth, or a specific worldview, we help you find someone who aligns with your journey. Build meaningful relationships with like-minded individuals who believe in growth, purpose, and intention.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node .\\src\\app.js",
+    "dev": "nodemon .\\src\\app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "NodeJs",
+    "JavaScript",
+    "React",
+    "MongoDB",
+    "ExpressJs"
+  ],
+  "author": "Bhupinder Partap Singh",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
