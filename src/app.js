@@ -1,19 +1,92 @@
-const express = require('express');
+const express = require("express");
+const connectDB = require('./config/database');
+const User = require('./models/user')
 
 const app = express();
 
-app.get("/", (req, res) => {
-    res.send("Hi there from Homepage");
-});
+connectDB().then(
+    () => {
+            console.log("DB connected successfully.")
+            app.listen(7777, () => {
+            console.log("Server listening on Port 7777");
+            });
+          }).catch((err) => {
+            console.error(err + " DB connection unsuccessull!!")
+            }
+        );
 
-app.use("/test", (req, res)=>{
-    res.send("Hi there from test");
-});
 
-app.use("/hello", (req, res) => {
-    res.send("Hello Hello Hello");
-});
+app.use(express.json());
 
-app.listen(3000, () => {
-    console.log("Server listening on Port 3000");
-});
+app.post("/signup", async (req, res) => {
+    const user = new User(req.body);
+    try {
+        await user.save();
+        res.send("User added successfully.")
+    }
+    catch (err) {
+        res.status(400).send("Error adding a user: "+err.message)
+    }
+})
+
+app.get("/users", async (req, res) => {
+    try {
+        const users = await User.find({});
+        if (users.length>0) {
+            res.send("Users found :"+ users);
+        }
+    }
+    catch (err) {
+        res.status(400).send("An error occured!!!" + err.message);
+    }
+    
+
+})
+
+app.get("/feed", async (req, res) => {
+    const emailId = req.body.email ;
+
+    try {
+        const users = await User.findById('680f36f417cd4efe0f0a1914');
+        // User.findOne returns a single object whereas User.find returns an array of objects.
+        console.log("User Found");
+        res.send(users)
+        // if (users.length>0) {
+        //     console.log("User Found");
+        //     res.send(users)
+        // }
+    }
+    catch (err) {
+       res.status(400).send("Error getting user");
+    }
+    
+})
+
+app.delete("/user", async (req, res) => {
+    const userId = req.body._id;
+    try {
+        const deletedUser = await User.findByIdAndDelete(userId);
+        if (deletedUser) {
+            res.send("User deleted successfully and user details are: " + deletedUser);
+        }
+    }
+    catch (err) {
+        res.status(400).send("Delete unsuccessful due to error: ", err.message);
+    }
+    })
+
+app.patch("/user", async (req, res) => {
+    const userId = req.body._id;
+    const data = req.body;
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, data, {returnDocument: 'before'});
+        console.log(updatedUser);
+        if (updatedUser) {
+            res.send("User updated successfully");
+        }
+    }
+    catch (err) {
+        res.status(200).send("Error occured: " + err.message);
+    }
+
+})
