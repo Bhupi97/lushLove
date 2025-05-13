@@ -20,6 +20,7 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) => {
     const user = new User(req.body);
+
     try {
         await user.save();
         res.send("User added successfully.")
@@ -75,12 +76,21 @@ app.delete("/user", async (req, res) => {
     }
     })
 
-app.patch("/user", async (req, res) => {
-    const userId = req.body._id;
+app.patch("/user/:userId", async (req, res) => {
+    const userId = req.params?.userId;
     const data = req.body;
     try {
-        const updatedUser = await User.findByIdAndUpdate(userId, data, {returnDocument: 'before'});
-        console.log(updatedUser);
+        const ALLOWED_UPDATES = ["firstName", "lastName", "photoUrl", "about", "password", "gender", "skills", "age"];
+        console.log(data);
+        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
+        if (!isUpdateAllowed) {
+            throw new Error("Update not allowed");
+        }
+        if (data?.skills.length>10) {
+            throw new Error("Maximum skills allowed are 10")
+        }
+        const updatedUser = await User.findByIdAndUpdate(userId, data, {returnDocument: 'after', runValidators: true});
+        // console.log(updatedUser);
         if (updatedUser) {
             res.send("User updated successfully");
         }
