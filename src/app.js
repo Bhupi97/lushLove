@@ -1,5 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const connectDB = require('./config/database');
 const User = require('./models/user')
 const { validateSignup, validateEmail } = require('./utils/validate'); 
@@ -20,6 +22,7 @@ connectDB().then(
 
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
     
@@ -58,12 +61,23 @@ app.post("/login", async (req, res) => {
             throw new Error("Invalid credentials!!!");
         }
         else {
+
+            const token = jwt.sign({id: user._id}, 'MayTheCodeBeWithYou$2025')
+            res.cookie("token", token);
             res.send("User logged in successfully");
         } 
     }
     catch (err) {
         res.status(400).send("ERROR : " + err.message);
     }
+})
+
+app.get("/profile", async (req, res) => {
+
+    const { token } = req.cookies;
+    const decodedId = jwt.verify(token, 'MayTheCodeBeWithYou$2025')
+    console.log(decodedId);
+    res.send("Cookies sent");
 })
 
 app.get("/users", async (req, res) => {
