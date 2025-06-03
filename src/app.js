@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const connectDB = require('./config/database');
 const User = require('./models/user')
 const { validateSignup, validateEmail } = require('./utils/validate'); 
+const { userAuth } = require("./middlewares/auth");
 
 
 const app = express();
@@ -47,37 +48,51 @@ app.post("/signup", async (req, res) => {
     }
 })
 
+
+app.get("/sendConnectionRequest", userAuth, (req, res) => {
+
+    const user = req.user;
+    const { firstName } = user;
+    res.send(firstName + " sent a Connection request");
+})
+
 app.post("/login", async (req, res) => {
 
     const { email, password } = req.body;
     try {
         validateEmail(email);
         const user = await User.findOne({email: email});
+
         if (!user) {
             throw new Error("Invalid credentials!!!")
         }
-        const isPasswordMatched = await bcrypt.compare(password, user.password);
+        const isPasswordMatched = user.validatePassword(password);
         if (!isPasswordMatched) {
             throw new Error("Invalid credentials!!!");
         }
         else {
 
-            const token = jwt.sign({id: user._id}, 'MayTheCodeBeWithYou$2025')
+            const token = await user.getJWT();
             res.cookie("token", token);
             res.send("User logged in successfully");
-        } 
+        }
     }
     catch (err) {
         res.status(400).send("ERROR : " + err.message);
     }
 })
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
 
-    const { token } = req.cookies;
-    const decodedId = jwt.verify(token, 'MayTheCodeBeWithYou$2025')
-    console.log(decodedId);
-    res.send("Cookies sent");
+    try {
+        const user = req.user;
+
+        res.send(user);
+    }
+    catch (err) {
+        res.status(400).send("ERROR: " + err.message);
+    }
+
 })
 
 app.get("/users", async (req, res) => {
@@ -99,7 +114,6 @@ app.get("/feed", async (req, res) => {
         // const users = await User.findById('680f36f417cd4efe0f0a1914');
         // User.findOne returns a single object whereas User.find returns an array of objects.
         const users = await User.find({email: emailId});
-        console.log("User Found");
         res.send(users);
         // if (users.length>0) {
         //     console.log("User Found");
