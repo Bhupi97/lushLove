@@ -82,7 +82,6 @@ userSchema.methods.validatePassword = async function (passwordByUser) {
     const user = this;
     const hashedPassword = user.password;
     const isPasswordMatched = await bcrypt.compare(passwordByUser, hashedPassword);
-
     return isPasswordMatched;
 };
 

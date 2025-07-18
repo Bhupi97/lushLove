@@ -33,10 +33,10 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
         if(req?.body?.lastName && req?.body?.lastName.length>30) {
             throw new Error("Invalid lastname!!!")
         }
-        if(req?.body?.skills && req?.body?.skills.length>10) {
+        if(req?.body?.skills && req?.body?.skills.>10) {
             throw new Error("Skills should not exceed 10")
         }
-        if(req?.body?.age && req?.body?.age>90 && !validator.isNumeric(req?.body?.age)) {
+        if(req?.body?.age && !validator.isNumeric(req?.body?.age) && req?.body?.age>90) {
             throw new Error("Invalid Age")
         }
         if(req?.body?.photoUrl && !validator.isURL(req?.body?.photoUrl)){
@@ -49,7 +49,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
         console.log(loggedInUser);
         
         await loggedInUser.save();
-        res.send(`${loggedInUser.firstName}, your profile was successfully updated!`);
+        res.send(`${loggedInUser.firstName}, your profile updated successfully`);
     } catch (err) {
         res.status(400).send("ERROR: "+ err.message);
     }
